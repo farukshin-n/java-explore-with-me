@@ -11,7 +11,7 @@
     <artifactId>stats-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>Explore With Me Stats Service</name>
+    <name>Stats Service</name>
 
     <dependencies>
         <dependency>
@@ -82,6 +82,8 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+
+
     </build>
 
 </project>
