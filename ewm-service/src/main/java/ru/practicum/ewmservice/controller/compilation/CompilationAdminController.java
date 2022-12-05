@@ -2,17 +2,15 @@ package ru.practicum.ewmservice.controller.compilation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewmservice.dto.CompilationDto;
-import ru.practicum.ewmservice.dto.NewCompilationDto;
-import ru.practicum.ewmservice.service.CompilationService;
+import ru.practicum.ewmservice.dto.compilation.CompilationDto;
+import ru.practicum.ewmservice.dto.compilation.NewCompilationDto;
+import ru.practicum.ewmservice.service.compilation.CompilationService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/admin/compilations")
 @RequiredArgsConstructor

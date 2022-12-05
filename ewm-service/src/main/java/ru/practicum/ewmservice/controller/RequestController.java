@@ -2,16 +2,14 @@ package ru.practicum.ewmservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmservice.dto.ParticipationRequestDto;
-import ru.practicum.ewmservice.service.ParticipationRequestService;
+import ru.practicum.ewmservice.service.request.ParticipationRequestService;
 
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping(path = "/users/{userId}")
 @RequiredArgsConstructor

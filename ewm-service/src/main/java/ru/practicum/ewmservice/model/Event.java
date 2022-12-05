@@ -37,6 +37,7 @@ public class Event {
     private LocalDateTime eventDate;
     @Column(name = "created")
     private LocalDateTime createdOn;
+    @Transient
     @Column(name = "published")
     private LocalDateTime publishedOn;
     @Column(name = "participant_limit")

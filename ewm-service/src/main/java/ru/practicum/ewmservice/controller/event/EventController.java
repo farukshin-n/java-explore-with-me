@@ -2,10 +2,12 @@ package ru.practicum.ewmservice.controller.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewmservice.dto.*;
-import ru.practicum.ewmservice.service.EventService;
+import ru.practicum.ewmservice.dto.event.EventFullDto;
+import ru.practicum.ewmservice.dto.event.EventShortDto;
+import ru.practicum.ewmservice.dto.event.NewEventDto;
+import ru.practicum.ewmservice.dto.event.UpdateEventRequest;
+import ru.practicum.ewmservice.service.event.EventService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -15,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
@@ -84,5 +85,6 @@ public class EventController {
     @DeleteMapping("/events/{eventId}")
     public void deleteEventById(@PathVariable Long eventId) {
         eventService.deleteEvent(eventId);
+        log.info("Get request for deleting event with id={}.", eventId);
     }
 }

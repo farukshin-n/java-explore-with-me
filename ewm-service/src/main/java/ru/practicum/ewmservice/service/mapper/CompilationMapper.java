@@ -1,9 +1,9 @@
 package ru.practicum.ewmservice.service.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmservice.dto.CompilationDto;
-import ru.practicum.ewmservice.dto.EventShortDto;
-import ru.practicum.ewmservice.dto.NewCompilationDto;
+import ru.practicum.ewmservice.dto.compilation.CompilationDto;
+import ru.practicum.ewmservice.dto.event.EventShortDto;
+import ru.practicum.ewmservice.dto.compilation.NewCompilationDto;
 import ru.practicum.ewmservice.model.Compilation;
 import ru.practicum.ewmservice.model.Event;
 

@@ -1,19 +1,19 @@
 package ru.practicum.ewmservice.service.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.ewmservice.dto.EventFullDto;
-import ru.practicum.ewmservice.dto.EventShortDto;
-import ru.practicum.ewmservice.dto.NewEventDto;
+import ru.practicum.ewmservice.dto.event.EventFullDto;
+import ru.practicum.ewmservice.dto.event.EventShortDto;
+import ru.practicum.ewmservice.dto.event.NewEventDto;
 import ru.practicum.ewmservice.model.Category;
-import ru.practicum.ewmservice.model.EventState;
 import ru.practicum.ewmservice.model.Event;
+import ru.practicum.ewmservice.model.EventState;
 import ru.practicum.ewmservice.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class EventMapper {
@@ -36,12 +36,12 @@ public class EventMapper {
         );
     }
 
-    public static List<EventFullDto> toEventFullDtoList(Iterable<Event> events,
+    public static List<EventFullDto> toEventFullDtoList(List<Event> events,
                                                   Map<Long, Integer> confirmedRequests,
                                                   Map<Long, Long> views) {
-        List<EventFullDto> result = new ArrayList<>();
-        events.forEach(e -> result.add(toEventFullDto(e, confirmedRequests, views)));
-        return result;
+        return events.stream()
+                .map(e -> toEventFullDto(e, confirmedRequests, views))
+                .collect(Collectors.toList());
     }
 
     public static EventFullDto toEventFullDto(Event event,
@@ -67,12 +67,12 @@ public class EventMapper {
         );
     }
 
-    public static List<EventShortDto> toEventShortDtoList(Iterable<Event> events,
+    public static List<EventShortDto> toEventShortDtoList(List<Event> events,
                                                        Map<Long, Integer> confirmedRequests,
                                                        Map<Long, Long> views) {
-        List<EventShortDto> result = new ArrayList<>();
-        events.forEach(e -> result.add(toEventShortDto(e, confirmedRequests, views)));
-        return result;
+        return events.stream()
+                .map(e -> toEventShortDto(e, confirmedRequests, views))
+                .collect(Collectors.toList());
     }
 
     public static EventShortDto toEventShortDto(Event event,

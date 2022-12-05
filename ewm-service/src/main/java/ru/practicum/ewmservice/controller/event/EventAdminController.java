@@ -2,20 +2,18 @@ package ru.practicum.ewmservice.controller.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewmservice.Update;
-import ru.practicum.ewmservice.dto.AdminUpdateEventRequest;
-import ru.practicum.ewmservice.dto.EventFullDto;
-import ru.practicum.ewmservice.service.EventService;
+import ru.practicum.ewmservice.dto.event.AdminUpdateEventRequest;
+import ru.practicum.ewmservice.dto.event.EventFullDto;
+import ru.practicum.ewmservice.service.event.EventService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping(path = "/admin/events")
 @RequiredArgsConstructor
@@ -25,8 +23,8 @@ public class EventAdminController {
     @PutMapping("/{eventId}")
     public EventFullDto updateEventByAdmin(
             @PathVariable @Positive Long eventId,
-            @RequestBody @Validated({Update.class}) AdminUpdateEventRequest adminUpdateEventRequest) {
-        log.info("Get request for ");
+            @RequestBody @Valid AdminUpdateEventRequest adminUpdateEventRequest) {
+        log.info("Get request for updating event with id={} by admin.", eventId);
         return eventService.updateEventByAdmin(eventId, adminUpdateEventRequest);
     }
 

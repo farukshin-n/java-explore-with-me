@@ -2,17 +2,15 @@ package ru.practicum.ewmservice.controller.category;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewmservice.dto.CategoryDto;
-import ru.practicum.ewmservice.service.CategoryService;
+import ru.practicum.ewmservice.dto.category.CategoryDto;
+import ru.practicum.ewmservice.service.category.CategoryService;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
