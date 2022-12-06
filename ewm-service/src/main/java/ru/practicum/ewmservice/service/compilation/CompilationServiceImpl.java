@@ -71,20 +71,20 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto addEventToCompilation(Long eventId, Long compilationId) {
         final Compilation compilation = getCompilationFromRepo(compilationId);
         final Event event = getEventFromRepo(eventId);
-        if (compilation.getEvents().contains(event)) {
+        List<Event> eventsInCompilation = compilation.getEvents();
+        if (eventsInCompilation.stream()
+                .anyMatch(e -> e.getId().equals(event.getId()))) {
             throw new BadRequestException(
                     String.format("Event with id=%d already existed in compilation with id=%d",
                             event.getId(),
-                            compilation.getId())
-            );
+                            compilation.getId()));
         }
-        List<Event> events = compilation.getEvents();
-        events.add(event);
-        compilation.setEvents(events);
+        eventsInCompilation.add(event);
+        compilation.setEvents(eventsInCompilation);
         Compilation resultCompilation = compilationRepository.save(compilation);
         log.info("Event with id={} successfully added to compilation with id={}.", event.getId(), compilation.getId());
 
-        return CompilationMapper.toDto(resultCompilation, getEventShortDtoList(events));
+        return CompilationMapper.toDto(resultCompilation, getEventShortDtoList(eventsInCompilation));
     }
 
     @Override
@@ -113,13 +113,14 @@ public class CompilationServiceImpl implements CompilationService {
     public void deleteEventFromCompilation(Long compilationId, Long eventId) {
         final Compilation compilation = getCompilationFromRepo(compilationId);
         final Event event = getEventFromRepo(eventId);
-        if (!compilation.getEvents().contains(event)) {
-            throw new BadRequestException(
-                    String.format("Event with id=%d is already not exist in compilation with id=%d",
-                            event.getId(),
-                            compilation.getId())
-            );
-        }
+        compilation.getEvents().stream()
+                .filter(e -> e.getId().equals(event.getId()))
+                .findAny()
+                .orElseThrow(() -> new BadRequestException(
+                        String.format("Event with id=%d doesn't exist in compilation with id=%d",
+                                event.getId(),
+                                compilation.getId())));
+
         List<Event> events = compilation.getEvents();
         events.remove(event);
         compilation.setEvents(events);
