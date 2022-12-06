@@ -9,6 +9,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import ru.practicum.ewmservice.util.StringToEnumConverter;
 
 import java.time.format.DateTimeFormatter;
 
@@ -28,6 +29,7 @@ public class EwmServiceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(@NonNull final FormatterRegistry registry) {
+        registry.addConverter(new StringToEnumConverter());
         WebMvcConfigurer.super.addFormatters(registry);
         DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();
         registrar.setDateTimeFormatter(DATE_TIME_FORMATTER);
