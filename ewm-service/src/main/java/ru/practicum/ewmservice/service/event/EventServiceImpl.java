@@ -213,7 +213,7 @@ public class EventServiceImpl implements EventService {
         final Event event = getEventFromRepo(eventRequest.getEventId());
         if (event.getState().equals(EventState.PUBLISHED)) {
             throw new ValidationException(String.format("Event with status %s cannot be edit.",
-                    EventState.PUBLISHED));
+                    event.getState()));
         }
         if (eventRequest.getEventDate() != null) {
             if (eventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import ru.practicum.ewmservice.model.Comment;
 
 import org.springframework.data.domain.Pageable;
+import ru.practicum.ewmservice.model.EventState;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findCommentsByEvent_IdOrderByCreatedDesc(Long eventId, Pageable pageable);
 
-    List<Comment> findCommentsByAuthor_IdOrderByCreatedDesc(Long authorId, Pageable pageable);
+    List<Comment> findCommentsByAuthor_IdAndAndEvent_StateOrderByCreatedDesc(
+            Long authorId, EventState state, Pageable pageable);
 
     List<Comment> findCommentsByVisibleIsOrderByCreatedDesc(boolean visible, Pageable pageable);
 

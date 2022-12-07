@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewmservice.dto.comment.CommentDto;
 import ru.practicum.ewmservice.dto.comment.NewCommentDto;
 import ru.practicum.ewmservice.dto.comment.UpdateCommentRequest;
 import ru.practicum.ewmservice.exception.BadRequestException;
 import ru.practicum.ewmservice.model.Comment;
 import ru.practicum.ewmservice.model.Event;
+import ru.practicum.ewmservice.model.EventState;
 import ru.practicum.ewmservice.model.User;
 import ru.practicum.ewmservice.repository.CommentRepository;
 import ru.practicum.ewmservice.repository.EventRepository;
@@ -17,12 +19,13 @@ import ru.practicum.ewmservice.repository.UserRepository;
 import ru.practicum.ewmservice.service.mapper.CommentMapper;
 
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
@@ -43,26 +46,23 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getComment(Long eventId, Long commentId) {
-        final Comment comment = findCommentByIdAndEventId(commentId, eventId);
-        log.info("Comment with id={} to event with id={} found successfully", commentId, eventId);
+        final Comment comment = commentRepository.findCommentByIdAndEvent_Id(commentId, eventId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(
+                        "There isn't comment with id=%d from event with id=%d in this database.", commentId, eventId
+                )));
+        checkEventPublicity(comment.getEvent());
+        log.info("Comment with id={} to event with id={} found successfully",
+                comment.getId(), comment.getEvent().getId());
 
         return CommentMapper.toDto(comment);
     }
 
     @Override
-    public List<CommentDto> getAllComments(int from, int size) {
-        PageRequest pageRequest = PageRequest.of(from / size, size);
-
-        return commentRepository.findAllComments(pageRequest).stream()
-                .map(CommentMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<CommentDto> getAllCommentsByEvent(Long eventId, int from, int size) {
         PageRequest pageRequest = PageRequest.of(from / size, size);
+        Event event = getEventFromRepo(eventId);
 
-        return commentRepository.findCommentsByEvent_IdOrderByCreatedDesc(eventId, pageRequest).stream()
+        return commentRepository.findCommentsByEvent_IdOrderByCreatedDesc(event.getId(), pageRequest).stream()
                 .map(CommentMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -71,16 +71,8 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDto> getAllCommentsByUser(Long userId, int from, int size) {
         PageRequest pageRequest = PageRequest.of(from / size, size);
 
-        return commentRepository.findCommentsByAuthor_IdOrderByCreatedDesc(userId, pageRequest).stream()
-                .map(CommentMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<CommentDto> getAllCommentsByVisibility(boolean visible, int from, int size) {
-        PageRequest pageRequest = PageRequest.of(from / size, size);
-
-        return commentRepository.findCommentsByVisibleIsOrderByCreatedDesc(visible, pageRequest).stream()
+        return commentRepository.findCommentsByAuthor_IdAndAndEvent_StateOrderByCreatedDesc(
+                userId, EventState.PUBLISHED, pageRequest).stream()
                 .map(CommentMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -94,46 +86,13 @@ public class CommentServiceImpl implements CommentService {
                         "Comment with id=%d by user with id=%d to event with id=%d don't exist.",
                         request.getId(), request.getAuthorId(), eventId)
                 ));
+        checkEventPublicity(comment.getEvent());
         comment.setComment(request.getComment());
         final Comment updatedComment = commentRepository.save(comment);
         log.info("Comment with id={} to event with id ={} successfully updated by text={}",
                 updatedComment.getId(), updatedComment.getEvent().getId(), updatedComment.getComment());
 
         return CommentMapper.updateToDto(updatedComment);
-    }
-
-    @Override
-    @Transactional
-    public CommentDto hideComment(Long eventId, Long commentId) {
-        final Comment comment = findCommentByIdAndEventId(commentId, eventId);
-        if (comment.getVisible().equals(false)) {
-            throw new BadRequestException(String.format(
-                    "Comment with id=%d already hidden.", comment.getId()
-            ));
-        }
-        comment.setVisible(false);
-        final Comment updatedComment = commentRepository.save(comment);
-        log.info("Admin hide comment with id={} to event with id={}.",
-                updatedComment.getId(), updatedComment.getEvent().getId());
-
-        return CommentMapper.toDto(updatedComment);
-    }
-
-    @Override
-    @Transactional
-    public CommentDto showComment(Long eventId, Long commentId) {
-        final Comment comment = findCommentByIdAndEventId(commentId, eventId);
-        if (comment.getVisible().equals(true)) {
-            throw new BadRequestException(String.format(
-                    "Comment with id=%d already visible.", comment.getId()
-            ));
-        }
-        comment.setVisible(true);
-        final Comment updatedComment = commentRepository.save(comment);
-        log.info("Admin show comment with id={} to event with id={}.",
-                updatedComment.getId(), updatedComment.getEvent().getId());
-
-        return CommentMapper.toDto(updatedComment);
     }
 
     @Override
@@ -148,14 +107,6 @@ public class CommentServiceImpl implements CommentService {
                 commentId, eventId);
     }
 
-    @Override
-    public void deleteCommentByAdmin(Long eventId, Long commentId) {
-        findCommentByIdAndEventId(commentId, eventId);
-        commentRepository.deleteById(commentId);
-        log.info("Comment with id={} from event with id={} successfully deleted by admin.",
-                commentId, eventId);
-    }
-
     private User getUserFromRepo(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new BadRequestException(
                 String.format("There isn't user with id %d in this database.", id)
@@ -163,16 +114,21 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Event getEventFromRepo(Long id) {
-        return eventRepository.findById(id)
+        final Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException(
                         String.format("There isn't event with id=%d in repository.", id)
                 ));
+
+        return checkEventPublicity(event);
     }
 
-    private Comment findCommentByIdAndEventId(Long commentId, Long eventId) {
-        return commentRepository.findCommentByIdAndEvent_Id(commentId, eventId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(
-                        "There isn't comment with id=%d from event with id=%d in this database.", commentId, eventId
-                )));
+    private Event checkEventPublicity(Event event) {
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new ValidationException(String.format("You cannot add comment to event with status %s.",
+                    event.getState()));
+        }
+
+        return event;
     }
+
 }

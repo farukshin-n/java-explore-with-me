@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmservice.dto.comment.CommentDto;
-import ru.practicum.ewmservice.service.comment.CommentService;
+import ru.practicum.ewmservice.service.comment.CommentAdminService;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class CommentAdminController {
-    private final CommentService commentService;
+    private final CommentAdminService commentService;
 
     @GetMapping("/comments")
     public List<CommentDto> getAll(
